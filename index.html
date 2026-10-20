@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Comments">
+<meta name="theme-color" content="#2f5d62">
+<title>Meeting Comments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f3ee; --card:#ffffff; --ink:#1f2a2c; --muted:#5f6b6d; --line:#e4ded4;
+  --accent:#2f5d62; --accent-soft:#e3eeec; --star:#b7791f; --star-soft:#fbf1df;
+  --s:#3f8f5a; --h:#2f6fa8; --x:#7a4fa0;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#141a1b; --card:#1d2526; --ink:#e9eeee; --muted:#9aa7a8; --line:#2c3638;
+    --accent:#7fb7bb; --accent-soft:#223234; --star:#e3b25e; --star-soft:#2e2717;
+    --s:#7cc794; --h:#7fb2e5; --x:#c19be0; }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:17px/1.5 "Nunito Sans",system-ui,sans-serif;padding:0 16px calc(32px + env(safe-area-inset-bottom))}
+.wrap{max-width:760px;margin:0 auto}
+header{display:flex;align-items:center;gap:12px;padding:18px 0 10px}
+header h1{font:600 1.45rem/1.2 Fraunces,Georgia,serif;margin:0;flex:1}
+.back{border:0;background:var(--accent-soft);color:var(--accent);font:inherit;font-weight:700;border-radius:999px;padding:8px 14px;cursor:pointer}
+.sub{color:var(--muted);margin:0 0 16px}
+.levels{display:grid;gap:12px;margin:8px 0 24px}
+.level{display:flex;align-items:center;gap:14px;text-align:left;width:100%;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:18px;padding:16px 18px;font:inherit;cursor:pointer}
+.level b{font-size:1.2rem;display:block}
+.level span{color:var(--muted);font-size:.95rem}
+.level .dot{width:44px;height:44px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;font-weight:700;font-size:1.1rem}
+.level.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.tabs{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+.tab{border:0;border-radius:999px;padding:9px 16px;font:inherit;font-weight:700;background:var(--card);color:var(--muted);border:1px solid var(--line);cursor:pointer}
+.tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.meet{color:var(--muted);font-size:.95rem;margin:0 0 12px}
+.meet a{color:var(--accent)}
+.parts{display:grid;gap:10px}
+.part{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.part small{color:var(--muted);display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}
+.part strong{font-size:1.08rem}
+.part em{font-style:normal;color:var(--muted);font-size:.92rem;display:block}
+.chip-level{display:inline-block;font-size:.8rem;font-weight:700;color:#fff;border-radius:999px;padding:3px 10px;vertical-align:middle}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 18px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:8px 12px;font:inherit;font-weight:700;min-width:54px;cursor:pointer}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+h2{font:600 1.1rem Fraunces,Georgia,serif;margin:18px 0 8px}
+.rec{background:var(--star-soft);border-radius:16px;padding:6px 14px 10px;margin:0 0 6px}
+.rec h2{color:var(--star);margin-top:10px}
+.q{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.q .prompt{font-weight:700;font-size:1.05rem;margin:0 0 4px}
+.refs{color:var(--muted);font-size:.9rem;margin:0 0 6px}
+.refs a{color:var(--accent)}
+.c{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+.c:first-of-type{border-top:0}
+.c p{margin:0;flex:1}
+.c .tag{display:block;font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:2px}
+.c .star{color:var(--star);font-weight:700}
+.copy{border:1px solid var(--line);background:transparent;color:var(--accent);border-radius:10px;padding:6px 10px;font:inherit;font-size:.85rem;font-weight:700;cursor:pointer;flex:none}
+.foot{color:var(--muted);font-size:.82rem;margin-top:28px;text-align:center}
+.foot a{color:var(--muted)}
+.empty{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script src="content.js"></script>
+<script>
+(function(){
+  var C = window.COMMENT_CONTENT, app = document.getElementById('app');
+  var COLORS = {s:'var(--s)', h:'var(--h)', x:'var(--x)'};
+  function get(k,d){ try{ return localStorage.getItem(k) || d; }catch(e){ return d; } }
+  function set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  var level = get('mc-level', 's');
+  if(!C.levels.some(function(l){return l.id===level;})) level='s';
+  function lvl(){ return C.levels.filter(function(l){return l.id===level;})[0]; }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function clean(t){ return t.charAt(0)==='*' ? t.slice(1) : t; }
+  function isRec(t){ return t.charAt(0)==='*'; }
+  function meeting(id){ return C.meetings.filter(function(m){return m.id===id;})[0]; }
+  function part(m,id){ return m.parts.filter(function(p){return p.id===id;})[0]; }
+  function badge(){ var l=lvl(); return '<span class="chip-level" style="background:'+COLORS[l.id]+'">'+esc(l.label)+'</span>'; }
+
+  function home(){
+    var mid = get('mc-meeting', C.meetings[0].id); if(!meeting(mid)) mid=C.meetings[0].id;
+    var m = meeting(mid);
+    var h = '<header><h1>Meeting Comments</h1></header><p class="sub">Who is the comment for?</p><div class="levels">';
+    C.levels.forEach(function(l){
+      h += '<button class="level'+(l.id===level?' on':'')+'" data-level="'+l.id+'"><span class="dot" style="background:'+COLORS[l.id]+'">'+['\u2022','\u2022\u2022','\u2022\u2022\u2022'][C.levels.indexOf(l)]+'</span><div><b>'+esc(l.label)+'</b><span>'+esc(l.hint)+'</span></div></button>';
+    });
+    h += '</div><div class="tabs">';
+    C.meetings.forEach(function(x){ h += '<button class="tab'+(x.id===mid?' on':'')+'" data-meeting="'+x.id+'">'+esc(x.label)+' · '+esc(x.dates)+'</button>'; });
+    h += '</div><p class="meet">'+esc(m.title)+(m.article?': '+esc(m.article):'')+(m.reading?' · '+esc(m.reading):'')+' · <a href="'+m.link+'" target="_blank" rel="noopener">Open on wol.jw.org</a></p><div class="parts">';
+    m.parts.forEach(function(p){
+      h += '<a class="part" href="#/'+m.id+'/'+p.id+'"><small>'+esc(p.section)+(p.time?' · '+esc(p.time):'')+'</small><strong>'+esc(p.title)+'</strong>'+(p.note?'<em>'+esc(p.note)+'</em>':'')+'<em>'+p.questions.length+' question'+(p.questions.length>1?'s':'')+'</em></a>';
+    });
+    h += '</div><p class="foot">Updated '+esc(C.updated)+'. Suggested comments in our own words. Read the publication and make the comment your own.</p>';
+    app.innerHTML = h;
+    app.querySelectorAll('[data-level]').forEach(function(b){ b.onclick=function(){ level=b.dataset.level; set('mc-level',level); home(); }; });
+    app.querySelectorAll('[data-meeting]').forEach(function(b){ b.onclick=function(){ set('mc-meeting',b.dataset.meeting); home(); }; });
+  }
+
+  function commentRows(list, tagFn){
+    return list.map(function(item){
+      var t=item.t, tag=tagFn?tagFn(item):'';
+      return '<div class="c"><p>'+(tag?'<span class="tag">'+tag+'</span>':'')+(isRec(t)?'<span class="star">★ </span>':'')+esc(clean(t))+'</p><button class="copy" data-copy="'+esc(clean(t))+'">Copy</button></div>';
+    }).join('');
+  }
+
+  function partView(m,p,qid){
+    var q = qid ? p.questions.filter(function(x){return x.id===qid;})[0] : null;
+    var h = '<header><button class="back" onclick="location.hash=\'\'">← Back</button><h1>'+esc(p.title)+'</h1></header>';
+    h += '<p class="meet">'+badge()+' &nbsp;'+esc(m.label)+' · '+esc(m.dates)+' · <a href="'+p.link+'" target="_blank" rel="noopener">Open this part</a></p>';
+    if(!q){
+      var recs=[];
+      p.questions.forEach(function(x){ x.c[level].forEach(function(t){ if(isRec(t)) recs.push({t:t,q:x}); }); });
+      if(recs.length) h += '<div class="rec"><h2>★ Recommended</h2>'+commentRows(recs,function(i){return esc(i.q.label)+' · '+esc(i.q.prompt);})+'</div>';
+    }
+    h += '<h2>'+(p.questions.length>1?'Pick a question':'Question')+'</h2><div class="chips">';
+    p.questions.forEach(function(x){ h += '<button class="chip'+(q&&q.id===x.id?' on':'')+'" data-q="'+x.id+'">'+esc(x.label)+'</button>'; });
+    h += '</div>';
+    if(!q && p.questions.length===1) q=p.questions[0];
+    if(q){
+      h += '<div class="q"><p class="prompt">'+esc(q.prompt)+'</p>';
+      if(q.scriptures && q.scriptures.length) h += '<p class="refs">'+q.scriptures.map(esc).join(' · ')+'</p>';
+      h += commentRows(q.c[level].map(function(t){return {t:t};}))+'</div>';
+    } else {
+      h += '<p class="empty">Tap a question above to see '+p.questions[0].c[level].length+'+ comments for each.</p>';
+    }
+    app.innerHTML = h;
+    window.scrollTo(0,0);
+    app.querySelectorAll('[data-q]').forEach(function(b){ b.onclick=function(){ location.hash='#/'+m.id+'/'+p.id+'/'+b.dataset.q; }; });
+  }
+
+  app.addEventListener('click', function(e){
+    var b=e.target.closest('[data-copy]'); if(!b) return;
+    var t=b.dataset.copy;
+    function ok(){ b.textContent='Copied'; setTimeout(function(){b.textContent='Copy';},1200); }
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(ok,function(){}); }
+  });
+
+  function route(){
+    var parts = location.hash.replace(/^#\/?/,'').split('/').filter(Boolean);
+    if(parts.length>=2){ var m=meeting(parts[0]); var p=m&&part(m,parts[1]); if(p){ partView(m,p,parts[2]); return; } }
+    home();
+  }
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>
