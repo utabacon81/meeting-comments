@@ -2,6 +2,8 @@
 
 Suggested comments for the audience-participation parts of each week's meetings, at three levels: Simple, Short, and Complex.
 
+Live site: https://meeting-comments.pages.dev/ (served by Cloudflare Pages, which redeploys on every push to main)
+
 A personal family project. Not an official jw.org site.
 
 ## How it is updated
